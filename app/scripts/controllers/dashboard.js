@@ -72,7 +72,7 @@ angular.module('frontendApp')
 	    $scope.assign = function(book) {
 	    	$scope.book = book;
 	    }
-	    
+
 	    $scope.assignBook = function(user) {
 	    	var assignObj= {};
 	    	assignObj.book = book;
@@ -98,9 +98,6 @@ angular.module('frontendApp')
 			}).catch(function(err){
 				$scope.error = err.message;
 			});
-
 	    }
-
-
    		
   });
