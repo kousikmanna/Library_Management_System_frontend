@@ -5,18 +5,18 @@
     
     <div class="col-md-4">
       <section class="login-form">
-        <form method="post" action="#" role="login">
+        <div role="login">
           <p class="text-center"><b>Library Management System</b></p>
-          <input type="email" name="email" placeholder="Email" required class="form-control input-lg" value="" />
+          <input type="email" name="email" ng-model="user.email" placeholder="Email" required class="form-control input-lg login-style" value="" />
           
-          <input type="password" class="form-control input-lg" id="password" placeholder="Password" required="" />
+          <input type="password" class="form-control input-lg login-style" ng-model="user.password" id="password" placeholder="Password" required="" />
           
           
           <div class="pwstrength_viewport_progress"></div>
           
           
-          <button type="submit" name="go" class="btn btn-lg btn-primary btn-block login">Sign in</button>
-        </form>
+          <button type="submit" name="go" class="btn btn-lg btn-primary btn-block login login-style" ng-click="login(user)">Sign in</button>
+        </div>
       </section>  
       </div>
       

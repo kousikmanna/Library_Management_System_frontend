@@ -109,3 +109,12 @@ form[role=login] {
   .availability-update{
   	display: inline-block;
   }
+
+
+
+  .login-style{
+    margin: 10px;
+  }
+  .tr-detail{
+    border-bottom: 1px solid rgba(17, 17, 17, 0.24);
+  }

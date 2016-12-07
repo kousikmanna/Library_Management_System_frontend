@@ -8,34 +8,35 @@
       <th align="left">Author</th> 
       <th align="left">Current Availability Status</th>
       <th align="left">Assign To</th> 
-      <th align="left">Already Given To</th> 
+      <!-- <th align="left">Already Given To</th>  -->
       <th align="left">Remove</th>
     </tr>
-    <tr style="border-bottom: 1px solid rgba(17, 17, 17, 0.24)" ng-repeat="book in books" class="dashboard-padding-hor-16">
+    <tr ng-repeat="book in books" class="tr-detail dashboard-padding-hor-16">
       <td style="padding: 2px;">{{book.name}}</td>
       <td>{{book.author}}</td> 
       <td>
         <input class="availability-update" name="availability" type="text" ng-model="book.availability" ng-change="changeAvailability(book)">
-        <button class="btn btn-primary btn-md center-block availability-update">Update</button>
+        <button class="btn btn-primary btn-md center-block availability-update"  ng-click="updateBook(book)">Update</button>
       </td>
-      <td>
-        <button ng-if="book.availability == 'available'" class="btn btn-primary btn-md center-block" data-toggle="modal" data-target="#assignModal" ng-click="assignBook(book)">Assign</button>
+      <td ng-if="!book.user">
+        <button ng-if="book.availability == 'available'" class="btn btn-primary btn-md center-block" data-toggle="modal" data-target="#assignModal" ng-click="assign(book)">Assign</button>
       </td>
-      <td>
-         <p ng-if="book.givenTo && book.givenTo.name">Name: {{book.givenTo.name}}</p>
-         <p ng-if="book.givenTo && book.givenTo.email">Email: {{book.givenTo.email}}</p>
+      <td ng-if="book.user">
+         <p ng-if="book.user && book.user.name">Name: {{book.user.name}}</p>
+         <p ng-if="book.user && book.user.email">Email: {{book.user.email}}</p>
+         <button class="btn btn-primary btn-md pull-left" ng-click="returnBook(book)">Return Book</button>
       </td>
-      <td><span ng-if="book.availability == 'available'" ng-click="removeItem($index)" style="cursor:pointer; color: #FF0000">Remove</span></td>
+      <td class="text-center"><span ng-if="book.availability == 'available'" ng-click="removeItem(book)" style="cursor:pointer; color: #FF0000">Remove</span></td>
     </tr>
   </table>
   <div class="dashboard-container dashboard-light-grey dashboard-padding-hor-16">
     <div class="dashboard-row dashboard-margin-top">
       <div class="dashboard-col s10">
-         <input type="text" placeholder="Add New Book" ng-model="addBook" class="dashboard-input dashboard-border dashboard-padding">
-         <input placeholder="Add Author" type="text" ng-model="addAuthor" class="dashboard-input dashboard-border dashboard-padding">
+         <input type="text" placeholder="Add New Book" ng-model="book.name" class="dashboard-input dashboard-border dashboard-padding">
+         <input placeholder="Add Author" type="text" ng-model="book.author" class="dashboard-input dashboard-border dashboard-padding">
       </div>
       <div class="dashboard-col s2">
-        <button ng-click="addItem()" class="dashboard-btn dashboard-padding dashboard-green">Add</button>
+        <button ng-click="addItem(book)" class="dashboard-btn dashboard-padding dashboard-green">Add</button>
       </div>
     </div>
     <p class="dashboard-padding-left dashboard-text-red">{{errortext}}</p>
@@ -55,8 +56,9 @@
           Username: <input class="assign" type="text" ng-model="user.username"><br>
           Name: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input  class="assign" type="text" ng-model="user.name"><br>
           Email: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input  class="assign" type="text" ng-model="user.email"><br>
-          Contact: &nbsp;&nbsp;&nbsp;&nbsp;<input  class="assign" type="text" ng-model="user.contact_number"><br>
-          <button class="btn btn-primary btn-md center-block assign-book" ng-click="assign(user)">Assign</button>
+          Contact: &nbsp;&nbsp;&nbsp;&nbsp;<input  class="assign" type="text" ng-model="user.mobile"><br>
+          DueDate: <input type="date" ng-model="dueDate">
+          <button class="btn btn-primary btn-md center-block assign-book" ng-click="assignBook(user)">Assign</button>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>

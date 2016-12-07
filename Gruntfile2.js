@@ -1,6 +1,6 @@
-// Generated on 2015-07-27 using generator-angular 0.12.1
+// Generated on 2016-12-06 using generator-angular 0.15.1
 'use strict';
-var modRewrite = require('connect-modrewrite');
+
 // # Globbing
 // for performance reasons we're only matching one level down:
 // 'test/spec/{,*/}*.js'
@@ -8,8 +8,7 @@ var modRewrite = require('connect-modrewrite');
 // 'test/spec/**/*.js'
 
 module.exports = function (grunt) {
-
-  var proxySnippet = require('grunt-connect-proxy/lib/utils').proxyRequest;
+var proxySnippet = require('grunt-connect-proxy/lib/utils').proxyRequest;
   // Time how long tasks take. Can help when optimizing build times
   require('time-grunt')(grunt);
 
@@ -32,48 +31,26 @@ module.exports = function (grunt) {
     // Project settings
     yeoman: appConfig,
 
-    less: {
-      development: {
-        options: {
-          compress: true,
-          yuicompress: true,
-          optimization: 2
-        },
-        files: {
-          "app/styles/main.css": "app/styles/less/main.less" // destination file and source file
-        }
-      }
-    },
-
     // Watches files for changes and runs tasks based on the changed files
     watch: {
-
-      less: {
-        files: ['<%= yeoman.app %>/styles/less/**/*.less', '<%= yeoman.app %>/styles/{,*/}*.css'],// which files to watch
-        tasks: ['less','newer:copy:styles', 'autoprefixer'],
-        options: {
-          nospawn: true
-        }
-      },
-    
       bower: {
         files: ['bower.json'],
         tasks: ['wiredep']
       },
       js: {
         files: ['<%= yeoman.app %>/scripts/{,*/}*.js'],
-        tasks: ['newer:jshint:all'],
+        tasks: ['newer:jshint:all', 'newer:jscs:all'],
         options: {
           livereload: '<%= connect.options.livereload %>'
         }
       },
       jsTest: {
         files: ['test/spec/{,*/}*.js'],
-        tasks: ['newer:jshint:test', 'karma']
+        tasks: ['newer:jshint:test', 'newer:jscs:test', 'karma']
       },
-      styles: {
-        files: ['<%= yeoman.app %>/styles/{,*/}*.css'],
-        tasks: ['newer:copy:styles', 'autoprefixer']
+      compass: {
+        files: ['<%= yeoman.app %>/styles/{,*/}*.{scss,sass}'],
+        tasks: ['compass:server', 'postcss:server']
       },
       gruntfile: {
         files: ['Gruntfile.js']
@@ -100,34 +77,29 @@ module.exports = function (grunt) {
         livereload: 35729
       },
       server: {
-       options: {
-         middleware: function (connect, options) {
+        options: {
+          middleware: function (connect, options) {
            return [proxySnippet];
-         }
-       },
-       proxies: [
-         {
-           context: '/api/',
-	         host: 'localhost',
-           https: false,
-           port: 1337,
-           rewrite: {
-             '^/api': ''
-           },
-           ws: true
-         }
-       ],
+          }
+        },
+        proxies: [
+          {
+            context: '/api/',
+            host: '127.0.0.1',
+            https: false,
+            port: 1337,
+            rewrite: {
+              '^/api': ''
+            },
+            ws: true
+          }
+        ],
       },
       livereload: {
         options: {
           open: true,
           middleware: function (connect) {
-            console.log("sdfsd")
-            var middlewares;
-            middlewares = [];
-            middlewares.push (
-              modRewrite(['!/api|\\.html|\\.js|\\.svg|\\.css|\\.png|\\.ttf|\\.woff2|\\.woff|\\.ico|\\.gif|\\.jpg|\\.eot|\\.jpeg$ /index.html [L]']),
-              proxySnippet,
+            return [
               connect.static('.tmp'),
               connect().use(
                 '/bower_components',
@@ -138,12 +110,10 @@ module.exports = function (grunt) {
                 connect.static('./app/styles')
               ),
               connect.static(appConfig.app)
-            );
-            return middlewares;
+            ];
           }
         }
       },
-
       test: {
         options: {
           port: 9001,
@@ -168,7 +138,7 @@ module.exports = function (grunt) {
       }
     },
 
-    // Make sure code styles are up to par and there are no obvious mistakes
+    // Make sure there are no obvious mistakes
     jshint: {
       options: {
         jshintrc: '.jshintrc',
@@ -184,6 +154,23 @@ module.exports = function (grunt) {
         options: {
           jshintrc: 'test/.jshintrc'
         },
+        src: ['test/spec/{,*/}*.js']
+      }
+    },
+
+    // Make sure code styles are up to par
+    jscs: {
+      options: {
+        config: '.jscsrc',
+        verbose: true
+      },
+      all: {
+        src: [
+          'Gruntfile.js',
+          '<%= yeoman.app %>/scripts/{,*/}*.js'
+        ]
+      },
+      test: {
         src: ['test/spec/{,*/}*.js']
       }
     },
@@ -204,13 +191,15 @@ module.exports = function (grunt) {
     },
 
     // Add vendor prefixed styles
-    autoprefixer: {
+    postcss: {
       options: {
-        browsers: ['last 1 version']
+        processors: [
+          require('autoprefixer-core')({browsers: ['last 1 version']})
+        ]
       },
       server: {
         options: {
-          map: true,
+          map: true
         },
         files: [{
           expand: true,
@@ -250,6 +239,39 @@ module.exports = function (grunt) {
               }
             }
           }
+      },
+      sass: {
+        src: ['<%= yeoman.app %>/styles/{,*/}*.{scss,sass}'],
+        ignorePath: /(\.\.\/){1,2}bower_components\//
+      }
+    }, 
+
+    // Compiles Sass to CSS and generates necessary files if requested
+    compass: {
+      options: {
+        sassDir: '<%= yeoman.app %>/styles',
+        cssDir: '.tmp/styles',
+        generatedImagesDir: '.tmp/images/generated',
+        imagesDir: '<%= yeoman.app %>/images',
+        javascriptsDir: '<%= yeoman.app %>/scripts',
+        fontsDir: '<%= yeoman.app %>/styles/fonts',
+        importPath: './bower_components',
+        httpImagesPath: '/images',
+        httpGeneratedImagesPath: '/images/generated',
+        httpFontsPath: '/styles/fonts',
+        relativeAssets: false,
+        assetCacheBuster: false,
+        raw: 'Sass::Script::Number.precision = 10\n'
+      },
+      dist: {
+        options: {
+          generatedImagesDir: '<%= yeoman.dist %>/images/generated'
+        }
+      },
+      server: {
+        options: {
+          sourcemap: true
+        }
       }
     },
 
@@ -259,7 +281,7 @@ module.exports = function (grunt) {
         src: [
           '<%= yeoman.dist %>/scripts/{,*/}*.js',
           '<%= yeoman.dist %>/styles/{,*/}*.css',
-          '<%= yeoman.dist %>/images/{,*/}*.{png,jpg,jpeg,gif,webp,svg,ico}',
+          '<%= yeoman.dist %>/images/{,*/}*.{png,jpg,jpeg,gif,webp,svg}',
           '<%= yeoman.dist %>/styles/fonts/*'
         ]
       }
@@ -369,7 +391,7 @@ module.exports = function (grunt) {
     ngtemplates: {
       dist: {
         options: {
-          module: 'klimbApp',
+          module: 'frontendApp',
           htmlmin: '<%= htmlmin.dist.options %>',
           usemin: 'scripts/scripts.js'
         },
@@ -409,9 +431,8 @@ module.exports = function (grunt) {
           dest: '<%= yeoman.dist %>',
           src: [
             '*.{ico,png,txt}',
-            '.htaccess',
             '*.html',
-            'images/{,*/}*.{webp,gif}',
+            'images/{,*/}*.{webp}',
             'styles/fonts/{,*/}*.*'
           ]
         }, {
@@ -421,8 +442,8 @@ module.exports = function (grunt) {
           src: ['generated/*']
         }, {
           expand: true,
-          cwd: 'bower_components/bootstrap/dist',
-          src: 'fonts/*',
+          cwd: '.',
+          src: 'bower_components/bootstrap-sass-official/assets/fonts/bootstrap/*',
           dest: '<%= yeoman.dist %>'
         }]
       },
@@ -437,13 +458,13 @@ module.exports = function (grunt) {
     // Run some tasks in parallel to speed up the build process
     concurrent: {
       server: [
-        'copy:styles'
+        'compass:server'
       ],
       test: [
-        'copy:styles'
+        'compass'
       ],
       dist: [
-        'copy:styles',
+        'compass:dist',
         'imagemin',
         'svgmin'
       ]
@@ -457,9 +478,8 @@ module.exports = function (grunt) {
       }
     }
   });
-  
-  grunt.loadNpmTasks('grunt-connect-proxy');
-  grunt.loadNpmTasks('grunt-contrib-connect');
+
+ grunt.loadNpmTasks('grunt-connect-proxy');
 
   grunt.registerTask('serve', 'Compile then start a connect web server', function (target) {
     if (target === 'dist') {
@@ -469,9 +489,8 @@ module.exports = function (grunt) {
     grunt.task.run([
       'clean:server',
       'wiredep',
-      'configureProxies:server',
       'concurrent:server',
-      'autoprefixer:server',
+      'postcss:server',
       'connect:livereload',
       'watch'
     ]);
@@ -486,18 +505,17 @@ module.exports = function (grunt) {
     'clean:server',
     'wiredep',
     'concurrent:test',
-    'autoprefixer',
+    'postcss',
     'connect:test',
     'karma'
   ]);
 
   grunt.registerTask('build', [
-    'less',
     'clean:dist',
     'wiredep',
     'useminPrepare',
     'concurrent:dist',
-    'autoprefixer',
+    'postcss',
     'ngtemplates',
     'concat',
     'ngAnnotate',
@@ -509,11 +527,10 @@ module.exports = function (grunt) {
     'usemin',
     'htmlmin'
   ]);
-  
 
   grunt.registerTask('default', [
-    'less',
     'newer:jshint',
+    'newer:jscs',
     'test',
     'build'
   ]);
